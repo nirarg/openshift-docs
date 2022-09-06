@@ -175,6 +175,8 @@ Topics:
     File: installing-restricted-networks-aws
   - Name: Uninstalling a cluster on AWS
     File: uninstalling-cluster-aws
+  - Name: Installing a cluster on AWS with remote workers on AWS Outposts
+    File: installing-aws-outposts-remote-workers
 - Name: Installing on Azure
   Dir: installing_azure
   Distros: openshift-origin,openshift-enterprise
