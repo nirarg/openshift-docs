@@ -4,6 +4,7 @@
 // * installing/installing_aws/installing-aws-secret-region.adoc
 // * installing/installing_aws/installing-aws-private.adoc
 // * installing/installing_aws/installing-aws-vpc.adoc
+// * installing/installing_aws/installing-aws-outposts-remote-workers.adoc
 
 ifeval::["{context}" == "installing-aws-china-region"]
 :aws-china:
@@ -14,12 +15,20 @@ endif::[]
 ifeval::["{context}" == "installing-aws-secret-region"]
 :aws-secret:
 endif::[]
+ifeval::["{context}" == "installing-aws-outposts-remote-workers"]
+:public:
+:aws-outposts:
+endif::[]
 
 :_content-type: CONCEPT
 [id="installation-custom-aws-vpc_{context}"]
 = About using a custom VPC
 
 In {product-title} {product-version}, you can deploy a cluster into existing subnets in an existing Amazon Virtual Private Cloud (VPC) in Amazon Web Services (AWS). By deploying {product-title} into an existing AWS VPC, you might be able to avoid limit constraints in new accounts or more easily abide by the operational constraints that your company's guidelines set. If you cannot obtain the infrastructure creation permissions that are required to create the VPC yourself, use this installation option.
+
+ifdef::aws-outposts[]
+In {product-title} {product-version}, AWS Subnets can't be deployed automatically on AWS Outposts by the installer, therefore you have to configure the VPC manually.
+endif::aws-outposts[]
 
 Because the installation program cannot know what other components are also in your existing subnets, it cannot choose subnet CIDRs and so forth on your behalf. You must configure networking for the subnets that you install your cluster to yourself.
 
@@ -54,6 +63,11 @@ ifdef::public[]
 * Create a public and private subnet for each availability zone that your cluster uses. Each availability zone can contain no more than one public and one private subnet. For an example of this type of configuration, see link:https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Scenario2.html[VPC with public and private subnets (NAT)] in the AWS documentation.
 +
 Record each subnet ID. Completing the installation requires that you enter these values in the `platform` section of the `install-config.yaml` file. See link:https://docs.aws.amazon.com/managedservices/latest/userguide/find-subnet.html[Finding a subnet ID] in the AWS documentation.
+ifdef::aws-outposts[]
+* In the availability zone in which the AWS Outposts is installed, you must create a public and private subnets inside the Outpost, in addition to the ones mentioned above. This is achieved by indicating the Outposts ARN during the subnet creation.
++
+The Outposts subnets you've created must not be used in the `platform` section of the `install-config.yaml` file. Record the private subnet record ID for the worker machines machineset creation.
+endif::aws-outposts[]
 * The VPC's CIDR block must contain the `Networking.MachineCIDR` range, which is the IP address pool for cluster machines. The subnet CIDR blocks must belong to the machine CIDR that you specify.
 * The VPC must have a public internet gateway attached to it. For each availability zone:
 ** The public subnet requires a route to the internet gateway.
@@ -63,13 +77,17 @@ endif::public[]
 * The VPC must not use the `kubernetes.io/cluster/.*: owned` tag.
 +
 The installation program modifies your subnets to add the `kubernetes.io/cluster/.*: shared` tag, so your subnets must have at least one free tag slot available for it. See link:https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#tag-restrictions[Tag Restrictions] in the AWS documentation to confirm that the installation program can add a tag to each subnet that you specify.
+ifdef::aws-outposts[]
++
+Special instructions for the Outposts subnets: in order to prevent these subnets from being used by the AWS LoadBalancer, they must include the `kubernetes.io/cluster/.*-outposts: outposts` special tag.
+endif::aws-outposts[]
 * You must enable the `enableDnsSupport` and `enableDnsHostnames` attributes in your VPC, so that the cluster can use the Route 53 zones that are attached to the VPC to resolve cluster's internal DNS records. See link:https://docs.aws.amazon.com/vpc/latest/userguide/vpc-dns.html#vpc-dns-support[DNS Support in Your VPC] in the AWS documentation.
 +
 If you prefer to use your own Route 53 hosted private zone, you must associate the existing hosted zone with your VPC prior to installing a cluster. You can define your hosted zone using the `platform.aws.hostedZone` field in the `install-config.yaml` file.
 
-ifndef::aws-secret[]
+ifndef::aws-secret,aws-outposts[]
 If you are working in a disconnected environment, you are unable to reach the public IP addresses for EC2, ELB, and S3 endpoints. Depending on the level to which you want to restrict internet traffic during the installation, the following configuration options are available:
-endif::aws-secret[]
+endif::aws-secret,aws-outposts[]
 
 ifdef::aws-secret[]
 A cluster in an SC2S or C2S Region is unable to reach the public IP addresses for the EC2, ELB, and S3 endpoints. Depending on the level to which you want to restrict internet traffic during the installation, the following configuration options are available:
@@ -81,11 +99,11 @@ endif::aws-secret[]
 
 Create a VPC endpoint and attach it to the subnets that the clusters are using. Name the endpoints as follows:
 
-ifndef::aws-china,aws-secret[]
+ifndef::aws-china,aws-secret,aws-outposts[]
 * `ec2.<region>.amazonaws.com`
 * `elasticloadbalancing.<region>.amazonaws.com`
 * `s3.<region>.amazonaws.com`
-endif::aws-china,aws-secret[]
+endif::aws-china,aws-secret,aws-outposts[]
 
 ifdef::aws-china[]
 * `ec2.<region>.amazonaws.com.cn`
@@ -116,11 +134,11 @@ As part of the installation process, you can configure an HTTP or HTTPS proxy. W
 === Option 3: Create a proxy with VPC endpoints
 As part of the installation process, you can configure an HTTP or HTTPS proxy with VPC endpoints. Create a VPC endpoint and attach it to the subnets that the clusters are using. Name the endpoints as follows:
 
-ifndef::aws-china,aws-secret[]
+ifndef::aws-china,aws-secret,aws-outposts[]
 * `ec2.<region>.amazonaws.com`
 * `elasticloadbalancing.<region>.amazonaws.com`
 * `s3.<region>.amazonaws.com`
-endif::aws-china,aws-secret[]
+endif::aws-china,aws-secret,aws-outposts[]
 
 ifdef::aws-china[]
 * `ec2.<region>.amazonaws.com.cn`
@@ -252,4 +270,8 @@ ifeval::["{context}" == "installing-aws-vpc"]
 endif::[]
 ifeval::["{context}" == "installing-aws-secret-region"]
 :!aws-secret:
+endif::[]
+ifeval::["{context}" == "installing-aws-outposts-remote-workers"]
+:!public:
+:!aws-outposts:
 endif::[]
