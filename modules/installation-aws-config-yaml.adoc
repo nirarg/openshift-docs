@@ -1,4 +1,4 @@
-// Module included in the following assemblies:
+/ Module included in the following assemblies:
 //
 // * installing/installing_aws/installing-aws-customizations.adoc
 // * installing/installing_aws/installing-aws-government-region.adoc
@@ -137,11 +137,11 @@ ifndef::gov,china,secret[]
 endif::gov,china,secret[]
 endif::aws-outposts[]
 ifdef::aws-outposts[]
-      type: m5.large <7>
+      type: m5.large <6>
       zones:
-        - us-east-1a <10>
+        - us-east-1a <7>
       rootVolume:
-        type: gp2 <6>
+        type: gp2 <8>
         size: 120
 endif::aws-outposts[]
   replicas: 3
@@ -158,7 +158,12 @@ endif::[]
     hostPrefix: 23
   machineNetwork:
   - cidr: 10.0.0.0/16
+ifndef::aws-outposts[]
   networkType: OVNKubernetes <8>
+endif::aws-outposts[]
+ifdef::aws-outposts[]
+  networkType: OVNKubernetes <9>
+endif::aws-outposts[]
   serviceNetwork:
   - 172.30.0.0/16
 platform:
@@ -182,12 +187,18 @@ endif::secret[]
     userTags:
       adminContact: jdoe
       costCenter: 7536
-ifdef::vpc,restricted,aws-outposts[]
+ifdef::vpc,restricted[]
     subnets: <9>
     - subnet-1
     - subnet-2
     - subnet-3
-endif::vpc,restricted,aws-outposts[]
+endif::vpc,restricted[]
+ifdef::aws-outposts[]
+  subnets: <10>
+  - subnet-1
+  - subnet-2
+  - subnet-3
+endif::aws-outposts[]
 ifdef::vpc,restricted[]
 ifndef::secret,china[]
     amiID: ami-96c6f8f7 <10>
@@ -323,25 +334,22 @@ instance types, such as `m4.2xlarge` or `m5.2xlarge`, for your machines if you
 disable simultaneous multithreading.
 ====
 ifndef::aws-outposts[]
-<6> To configure faster storage for etcd, especially for larger clusters, set the
-storage type as `io1` and set `iops` to `2000`.
+<6> To configure faster storage for etcd, especially for larger clusters, set the storage type as `io1` and set `iops` to `2000`.
 <7> Whether to require the link:https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html[Amazon EC2 Instance Metadata Service v2] (IMDSv2). To require IMDSv2, set the parameter value to `Required`. To allow the use of both IMDSv1 and IMDSv2, set the parameter value to `Optional`. If no value is specified, both IMDSv1 and IMDSv2 are allowed.
 +
 [NOTE]
 ====
 The IMDS configuration for control plane machines that is set during cluster installation can only be changed by using the AWS CLI. The IMDS configuration for compute machines can be changed by using compute machine sets.
 ====
+<8> The cluster network plugin to install. The supported values are `OVNKubernetes` and `OpenShiftSDN`. The default value is `OVNKubernetes`.
 endif::aws-outposts[]
 ifdef::aws-outposts[]
-<6> For compute instances running in AWS Outpost instance, specify volume type gp2, to avoid using gp3 volume type which is not supported.
-<7> For compute instances running in AWS Outpost instance, specify a supported instance type in the AWS Outpost instance.
-<8> The cluster network plugin to install. The supported values are `OVNKubernetes` and `OpenShiftSDN`. The default value is `OVNKubernetes`.
-<9> If you provide your own VPC, specify subnets for each availability zone that your cluster uses.
-<10> For compute instances running in AWS Outpost instance, specify the Availability Zone where the Outpost instance is located.
-<11> You can optionally provide the `sshKey` value that you use to access the
-machines in your cluster.
+<6> For compute instances running in an AWS Outpost instance, specify a supported instance type in the AWS Outpost instance.
+<7> For compute instances running in AWS Outpost instance, specify the Availability Zone where the Outpost instance is located.
+<8> For compute instances running in AWS Outpost instance, specify volume type gp2, to avoid using gp3 volume type which is not supported.
+<9> The cluster network plugin to install. The supported values are `OVNKubernetes` and `OpenShiftSDN`. The default value is `OVNKubernetes`.
+<10> If you provide your own VPC, specify subnets for each availability zone that your cluster uses.
 endif::aws-outposts[]
-ifndef::aws-outposts[]
 ifdef::vpc,restricted[]
 <9> If you provide your own VPC, specify subnets for each availability zone that your cluster uses.
 <10> The ID of the AMI used to boot machines for the cluster. If set, the AMI
@@ -357,21 +365,15 @@ ifndef::openshift-origin[]
 ====
 The use of FIPS Validated / Modules in Process cryptographic libraries is only supported on {product-title} deployments on the `x86_64` architecture.
 ====
-<14> You can optionally provide the `sshKey` value that you use to access the
-machines in your cluster.
+<14> You can optionally provide the `sshKey` value that you use to access the machines in your cluster.
 endif::openshift-origin[]
 ifdef::openshift-origin[]
-<13> You can optionally provide the `sshKey` value that you use to access the
-machines in your cluster.
+<13> You can optionally provide the `sshKey` value that you use to access the machines in your cluster.
 endif::openshift-origin[]
 endif::vpc,restricted[]
-ifndef::vpc,restricted[]
-<8> The cluster network plugin to install. The supported values are `OVNKubernetes` and `OpenShiftSDN`. The default value is `OVNKubernetes`.
-<9> The ID of the AMI used to boot machines for the cluster. If set, the AMI
-must belong to the same region as the cluster.
-<10> The AWS service endpoints. Custom endpoints are required when installing to
-an unknown AWS region. The endpoint URL must use the `https` protocol and the
-host must trust the certificate.
+ifndef::vpc,restricted,aws-outposts[]
+<9> The ID of the AMI used to boot machines for the cluster. If set, the AMI must belong to the same region as the cluster.
+<10> The AWS service endpoints. Custom endpoints are required when installing to an unknown AWS region. The endpoint URL must use the `https` protocol and the host must trust the certificate.
 ifndef::openshift-origin[]
 <11> Whether to enable or disable FIPS mode. By default, FIPS mode is not enabled. If FIPS mode is enabled, the {op-system-first} machines that {product-title} runs on bypass the default Kubernetes cryptography suite and use the cryptography modules that are provided with {op-system} instead.
 +
@@ -379,14 +381,16 @@ ifndef::openshift-origin[]
 ====
 The use of FIPS Validated / Modules in Process cryptographic libraries is only supported on {product-title} deployments on the `x86_64` architecture.
 ====
-<12> You can optionally provide the `sshKey` value that you use to access the
-machines in your cluster.
+<12> You can optionally provide the `sshKey` value that you use to access the machines in your cluster.
 endif::openshift-origin[]
 ifdef::openshift-origin[]
 <11> You can optionally provide the `sshKey` value that you use to access the
 machines in your cluster.
 endif::openshift-origin[]
-endif::vpc,restricted[]
+endif::vpc,restricted,aws-outposts[]
+ifdef::aws-outposts[]
+<11> You can optionally provide the `sshKey` value that you use to access the machines in your cluster.
+endif::aws-outposts[]
 +
 [NOTE]
 ====
@@ -426,7 +430,6 @@ specify the base64-encoded user name and password for your mirror registry.
 <16> Provide the `imageContentSources` section from the output of the command to mirror the repository.
 endif::openshift-origin[]
 endif::restricted[]
-endif::aws-outposts[]
 
 ifeval::["{context}" == "installing-aws-network-customizations"]
 :!with-networking:

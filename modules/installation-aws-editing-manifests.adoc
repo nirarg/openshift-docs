@@ -6,7 +6,7 @@
 [id="installation-aws-creating-manifests_{context}"]
 = Generating manifest files
 
-Use the installation program to generate a set of manifest files in the assets directory.
+Use the installation program to generate a set of manifest files in the assets directory. Manifest files are required to specify the AWS Outposts subnets to use for worker machines, and to specify settings required by the network provider.
 
 If you plan to reuse the `install-config.yaml` file, create a backup file before you generate the manifest files.
 
@@ -32,7 +32,7 @@ This command displays the following messages.
 [source,terminal]
 ----
 INFO Consuming Install Config from target directory
-INFO Manifests created in: <installation_directory>/manifests and <installation_directory>/openshift 
+INFO Manifests created in: <installation_directory>/manifests and <installation_directory>/openshift
 ----
 +
 The command generates the following manifest files:
@@ -122,5 +122,3 @@ spec:
     ovnKubernetesConfig:
       mtu: 1200
 ----
-
-

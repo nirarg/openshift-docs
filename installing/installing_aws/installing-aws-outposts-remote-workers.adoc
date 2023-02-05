@@ -27,8 +27,9 @@ In order to install a cluster with remote workers in AWS Outposts, all worker in
 +
 [IMPORTANT]
 ====
-Since the cluster uses the provided AWS credentials to create AWS resources for its entire life cycle, the credentials must be key-based and long-lived. So, If you have an AWS profile stored on your computer, it must not use a temporary session token, generated while using a multi-factor authentication device. For information about generating the appropriate keys, see link:https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html[Managing Access Keys for IAM Users] in the AWS documentation. You may supply the keys when you run the installation program.
+Since the cluster uses the provided AWS credentials to create AWS resources for its entire life cycle, the credentials must be key-based and long-lived. So, If you have an AWS profile stored on your computer, it must not use a temporary session token, generated while using a multi-factor authentication device. For more information about generating the appropriate keys, see link:https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html[Managing Access Keys for IAM Users] in the AWS documentation. You may supply the keys when you run the installation program.
 ====
+* You have access to an existing Amazon Virtual Private Cloud (VPC) in Amazon Web Services (AWS).
 * If firewall is used, it was xref:../../installing/install_config/configuring-firewall.adoc#configuring-firewall[configured to allow the sites] that your cluster requires access to.
 * If the cloud identity and access management (IAM) APIs are not accessible in your environment, or if you do not want to store an administrator-level credential secret in the `kube-system` namespace, you can xref:../../installing/installing_aws/manually-creating-iam.adoc#manually-creating-iam-aws[manually create and maintain IAM credentials].
 
@@ -40,13 +41,13 @@ include::modules/ssh-agent-using.adoc[leveloffset=+1]
 
 include::modules/installation-obtaining-installer.adoc[leveloffset=+1]
 
+include::modules/installation-minimum-resource-requirements.adoc[leveloffset=+1]
+
+include::modules/installation-identify-supported-instance-types.adoc[leveloffset=+1]
+
 include::modules/installation-initializing.adoc[leveloffset=+1]
 
 include::modules/installation-configuration-parameters.adoc[leveloffset=+2]
-
-include::modules/installation-minimum-resource-requirements.adoc[leveloffset=+2]
-
-include::modules/installation-supported-aws-machine-types.adoc[leveloffset=+2]
 
 include::modules/installation-aws-config-yaml.adoc[leveloffset=+2]
 
